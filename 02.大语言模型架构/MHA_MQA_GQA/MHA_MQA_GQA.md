@@ -29,7 +29,6 @@ GQA介于MHA和MQA之间。GQA 综合 MHA 和 MQA ，既不损失太多性能，
 5. 拼接多头输出，乘以$W_O$，得到最终输出：$MultiHeadOutput = Concat \left(\right. Output ^{1}, Output ^{2}, \ldots, Output \left.^{H}\right) W_{O}$
 
 代码实现
-
 ```python
 import torch
 from torch import nn
@@ -38,6 +37,8 @@ class MutiHeadAttention(torch.nn.Module):
         super(MutiHeadAttention, self).__init__()
         self.num_heads = num_heads
         self.head_dim = hidden_size // num_heads
+        
+        assert (hidden_size % num_heads) == 0, "hidden_size must be divisible by num_heads"
         
         ## 初始化Q、K、V投影矩阵
         self.q_linear = nn.Linear(hidden_size, hidden_size)
@@ -48,7 +49,8 @@ class MutiHeadAttention(torch.nn.Module):
         self.o_linear = nn.Linear(hidden_size, hidden_size)
         
     def forward(self, hidden_state, attention_mask=None):
-        batch_size = hidden_state.size()[0]
+       #hidden_state就是输入的 doc的句子，shape为 [batch_size, seq_len, hidden_size] 
+       batch_size = hidden_state.size()[0]
         
         query = self.q_linear(hidden_state)
         key = self.k_linear(hidden_state)
@@ -58,19 +60,19 @@ class MutiHeadAttention(torch.nn.Module):
         key = self.split_head(key)
         value = self.split_head(value)
         
-        ## 计算注意力分数
+        ## 计算注意力分数，-1 为 hidden_size,-2为seqlen
         attention_scores = torch.matmul(query, key.transpose(-1, -2)) / torch.sqrt(torch.tensor(self.head_dim))
         
         if attention_mask != None:
             attention_scores += attention_mask * -1e-9
         
-        ## 对注意力分数进行归一化
+        ## 对注意力分数进行归一化，按列 进行softmax
         attention_probs = torch.softmax(attention_scores, dim=-1)
         
         output = torch.matmul(attention_probs, value)
         
-        ## 对注意力输出进行拼接
-        output = output.transpose(-1, -2).contiguous().view(batch_size, -1, self.head_dim * self.num_heads)
+        ## 对注意力输出进行拼接，contiguous()确保内存连续性
+        output = output.transpose(1, 2).contiguous().view(batch_size, -1, self.head_dim * self.num_heads)
         
         output = self.o_linear(output)
         
@@ -79,6 +81,7 @@ class MutiHeadAttention(torch.nn.Module):
         
     def split_head(self, x):
         batch_size = x.size()[0]
+        # -1位置的dim，自动计算，代表seqlen
         return x.view(batch_size, -1, self.num_heads, self.head_dim).transpose(1,2)
     
     
