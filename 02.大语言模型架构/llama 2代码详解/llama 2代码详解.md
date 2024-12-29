@@ -52,9 +52,7 @@ LLM的输入数据是一段文本，可以是一个句子或一段话。文本�
 'EOS'-> [p_{n0},p_{n1},p_{n2},...,p_{nd-1}]
 ```
 
-#### （4）**位置编码**
-
-对于Token序列中的每个位置，添加位置编码（Positional Encoding）向量，以提供关于Token在序列中位置的信息。位置编码是为了**区分不同位置的Token，并为模型提供上下文关系的信息**。
+#### （4）**位置编码 同位置的Token，并为模型提供上下文关系的信息**。
 
 ```text
 [p_{00},p_{01},p_{02},...,p_{0d-1}]       [pe_{00},pe_{01},pe_{02},...,pe_{0d-1}]
@@ -176,12 +174,14 @@ Transformer中的Normalization层一般都是采用LayerNorm来对Tensor进行�
 
 $$
 \begin{aligned} \text { LayerNorm }: y & =\frac{x-E[x]}{\sqrt{\operatorname{Var}[x]+\epsilon}} * \gamma+\beta \\ E[x] & =\frac{1}{N} \sum_{i=1}^{N} x_{i} \\ \operatorname{Var}[x] & =\frac{1}{N} \sum_{i=1}^{N}\left(x_{i}-E[x]\right)^{2}\end{aligned}
+
 $$
 
 而[RMSNorm](https://arxiv.org/pdf/1910.07467.pdf "RMSNorm")就是LayerNorm的变体，\*\*RMSNorm省去了求均值的过程，也没有了偏置 **$\beta$** \*\*，即
 
 $$
 \begin{aligned} \text { RMSNorm : } y & =\frac{x}{\sqrt{\operatorname{Mean}\left(x^{2}\right)+\epsilon}} * \gamma \\ \operatorname{Mean}\left(x^{2}\right) & =\frac{1}{N} \sum_{i=1}^{N} x_{i}^{2}\end{aligned}
+
 $$
 
 > 其中 $\gamma$ 和 $\beta$ 为可学习的参数
@@ -221,6 +221,7 @@ Llama 2 在对序列进行位置编码时，也与标准Transformer不一样，*
 
 $$
 \begin{aligned} f_{\{q, k, v\}}\left(x_{i}, i\right) & =W_{\{q, k, v\}}\left(x_{i}+p_{i}\right) \\ p_{i, 2 t} & =\sin \left(\frac{i}{10000^{\frac{2 t}{d}}}\right) \\ p_{i, 2 t+1} & =\cos \left(\frac{i}{10000^{\frac{2 t}{d}}}\right)\end{aligned}
+
 $$
 
 #### **（2）旋转位置编码**
@@ -231,6 +232,7 @@ $$
 
 $$
 \tilde{\boldsymbol{q}}_{m}=f(\boldsymbol{q}, m), \tilde{\boldsymbol{k}}_{n}=f(\boldsymbol{k}, n)
+
 $$
 
 经过上述操作后，$\tilde{\boldsymbol{q}}_{m}$和$\tilde{\boldsymbol{k}}_{n}$就带有位置m和n的绝对位置信息。
@@ -239,18 +241,21 @@ $$
 
 $$
 f(\boldsymbol{q}, m)=R_{f}(\boldsymbol{q}, m) e^{i \Theta_{f}(\boldsymbol{q}, m)}=\|\boldsymbol{q}\| e^{i(\Theta(\boldsymbol{q})+m \theta)}=\boldsymbol{q} e^{i m \theta}
+
 $$
 
 根据复数乘法的几何意义，上述变换实际上是对应向量旋转，所以位置向量称为“旋转式位置编 码”。还可以使用矩阵形式表示
 
 $$
 f(\boldsymbol{q}, m)=\left(\begin{array}{cc}\cos m \theta & -\sin \cos m \theta \\ \sin m \theta & \cos m \theta\end{array}\right)\left(\begin{array}{l}\boldsymbol{q}_{0} \\ \boldsymbol{q}_{1}\end{array}\right)
+
 $$
 
 根据内积满足线性叠加的性质，任意偶数维的 RoPE，都可以表示为二维情形的拼接，即：
 
 $$
 f(\boldsymbol{q}, m)=\underbrace{\left(\begin{array}{ccccccc}\cos m \theta_{0} & -\sin m \theta_{0} & 0 & 0 & \cdots & 0 & 0 \\ \sin m \theta_{0} & \cos m \theta_{0} & 0 & 0 & \cdots & 0 & 0 \\ 0 & 0 & \cos m \theta_{1} & -\sin m \theta_{1} & \cdots & 0 & 0 \\ 0 & 0 & \sin m \theta_{1} & \cos m \theta_{1} & \cdots & 0 & 0 \\ \cdots & \cdots & \cdots & \cdots & \ddots & \cdots & \cdots \\ 0 & 0 & 0 & 0 & \cdots & \cos m \theta_{d / 2-1} & -\sin m \theta_{d / 2-1} \\ 0 & 0 & 0 & 0 & \cdots & \sin m \theta_{d / 2-1} & \cos m \theta_{d / 2-1}\end{array}\right)}_{\boldsymbol{R}_{d}}\left(\begin{array}{c}\boldsymbol{q}_{0} \\ \boldsymbol{q}_{1} \\ \boldsymbol{q}_{2} \\ \boldsymbol{q}_{3} \\ \cdots \\ \boldsymbol{q}_{d-2} \\ \boldsymbol{q}_{d-1}\end{array}\right)
+
 $$
 
 ![](image/image_QzGxZVzHBf.png)
@@ -293,10 +298,10 @@ def apply_rotary_emb(
     # 所以经过view_as_complex变换后xq_.shape = [bsz, seqlen, self.n_local_heads, self.head_dim//2]
     xq_ = torch.view_as_complex(xq.float().reshape(*xq.shape[:-1], -1, 2))
     xk_ = torch.view_as_complex(xk.float().reshape(*xk.shape[:-1], -1, 2))
-    
-    
+  
+  
     freqs_cis = reshape_for_broadcast(freqs_cis, xq_) # freqs_cis.shape = (1,x.shape[1],1,x.shape[-1])
-    
+  
     # xq_ 与freqs_cis广播哈达玛积
     # [bsz, seqlen, self.n_local_heads, self.head_dim//2] * [1,seqlen,1,self.head_dim//2]
     # torch.view_as_real用于将复数再转换回实数向量, 再经过flatten展平第4个维度 
@@ -311,7 +316,7 @@ class Attention(nn.Module):
         self.wq = Linear(...)
         self.wk = Linear(...)
         self.wv = Linear(...)
-        
+      
         self.freqs_cis = precompute_freqs_cis(dim, max_seq_len * 2)
 
     def forward(self, x: torch.Tensor):
@@ -436,7 +441,7 @@ class Attention(nn.Module):
 
         self.cache_k = torch.zeros((args.max_batch_size,args.max_seq_len,self.n_local_kv_heads, #KV的头数
                 self.head_dim,)).cuda()
-        self.cache_v = torch.zeros((args.max_batch_size,args.max_seq_len,self.n_local_kv_heads,#KV的头数         
+        self.cache_v = torch.zeros((args.max_batch_size,args.max_seq_len,self.n_local_kv_heads,#KV的头数       
                                     self.head_dim,)).cuda()
     def forward(
         self,
@@ -451,7 +456,7 @@ class Attention(nn.Module):
         xq = xq.view(bsz, seqlen, self.n_local_heads, self.head_dim)
         xk = xk.view(bsz, seqlen, self.n_local_kv_heads, self.head_dim)
         xv = xv.view(bsz, seqlen, self.n_local_kv_heads, self.head_dim)
-        
+      
         xq, xk = apply_rotary_emb(xq, xk, freqs_cis=freqs_cis) #嵌入RoPE位置编码
         ...
         # 按此时序列的句子长度把kv添加到cache中
@@ -465,7 +470,7 @@ class Attention(nn.Module):
         # repeat k/v heads if n_kv_heads < n_heads
         keys = repeat_kv(keys, self.n_rep)  # (bs, seqlen, n_local_heads, head_dim)
         values = repeat_kv(values, self.n_rep)  # (bs, seqlen, n_local_heads, head_dim)
-       
+     
         xq = xq.transpose(1, 2)  # (bs, n_local_heads, seqlen, head_dim)
         keys = keys.transpose(1, 2)
         values = values.transpose(1, 2)
@@ -486,6 +491,7 @@ class Attention(nn.Module):
 
 $$
 \operatorname{SiLU}(x)=x * \operatorname{Sigmoid}(x)=\frac{x}{1+e^{-x}}
+
 $$
 
 ```python
