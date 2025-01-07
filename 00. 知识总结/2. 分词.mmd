@@ -82,6 +82,52 @@
 
 ###### token\.lemma\_
 
+### 数据
+
+#### base变为chat，需要SFT指令遵从
+
+##### SFT、 RLHF的数据格式
+
+###### chatML
+
+####### \<| i m s t a r t |\>system<br/>You a r e a h e l p f u l a s s i s t a n t \. \<| im end |\><br/>\<| i m s t a r t |\> u s e r<br/>H e l l o \!\<| im end |\><br/>\<| i m s t a r t |\> a s s i s t a n t<br/>H e l l o \! How can I a s s i s t you t o d a y ?\<| im end |\><br/>
+> align=`left`
+
+
+####### \<imstart\>system\\user\\assistant<br/>\<imend\>
+> align=`left`
+
+
+#### 预训练数据
+
+##### 数据来源
+
+###### 预训练数据共3TB
+
+###### 主要涉及公共网络文档、百科全书、书籍、代码等，数据涉及多语言
+
+###### 以中文和英文为主
+
+##### 数据处理流程
+
+###### 为了保证数据质量
+
+####### 制定了一套全面的预处理程序
+
+###### Web数据需要从HTML中提取文本内容，并采用语言识别工具确定语种
+
+###### 通过重复数据删除技术增加数据的多样性
+
+####### 包括规范化后的精确匹配重复数据删除方法和<br/>使用MinHash和LSH算法的模糊重复数据删除方法；
+
+###### 结合规则和机器学习的方法过滤低质量数据
+
+####### 即通过多个模型对内容进行评分，<br/>包括语言模型、文本质量评分模型以及用于识别潜在冒犯性模型；
+
+###### 从各种来源数据中手动采样并进行审查，以确保其质量；
+
+###### 有选择地对来自某些来源的数据进行采样，以确保模型在各种高质量内容上进行训练。
+
 ## 57\. LLMs Tokenizer 篇 <br/>将单词变为 token ID
 
 ### tokenize有三种粒度：word/subword/char
