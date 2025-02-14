@@ -49,8 +49,8 @@ class MutiHeadAttention(torch.nn.Module):
         self.o_linear = nn.Linear(hidden_size, hidden_size)
         
     def forward(self, hidden_state, attention_mask=None):
-       #hidden_state就是输入的 doc的句子，shape为 [batch_size, seq_len, hidden_size] 
-       batch_size = hidden_state.size()[0]
+        #hidden_state就是输入的 doc的句子，shape为 [batch_size, seq_len, hidden_size] 
+        batch_size = hidden_state.size()[0]
         
         query = self.q_linear(hidden_state)
         key = self.k_linear(hidden_state)
@@ -115,7 +115,7 @@ class MutiQueryAttention(torch.nn.Module):
         
     def forward(self, hidden_state, attention_mask=None):
         batch_size = hidden_state.size()[0]
-        
+         
         query = self.q_linear(hidden_state)
         key = self.k_linear(hidden_state)
         value = self.v_linear(hidden_state)
