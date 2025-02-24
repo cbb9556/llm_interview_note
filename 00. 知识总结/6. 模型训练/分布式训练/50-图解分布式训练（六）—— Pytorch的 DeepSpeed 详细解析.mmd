@@ -28,6 +28,8 @@
 
 ##### 中间的 注意力分数（seq\*seq 的矩阵）、 softmax结果、 
 
+##### 一个batch的所有 seq token都需要放入到 显存中
+
 ### 常见的深度学习框架TensorFlow、Pytorch、Keras
 
 #### 在面向大规模模型的时<br/>候都不是很方便。
@@ -286,7 +288,7 @@
 
 ##### 主节点还负责监控系统状<br/>态、处理任务分配和结果汇总等任务，因此是整个系统的关键部分
 
-### • DeepSpeed 还提供了 mpi、gloo 和 nccl 等通信策略
+### • DeepSpeed 还提供了<br/> mpi、gloo 和 nccl 等通信策略
 
 #### 可以根据具体情况进行选择和配置
 
@@ -360,7 +362,7 @@
 
 #### 4\. 定义 Trainer 训练类 【注：这里有部分改动】
 
-### 在模型参数 和 优化器 初始化的时候， 将 deepspeed的参数， 注入到初始化器中
+### 在模型参数 和 优化器 初始化的时候， <br/>将 deepspeed的参数， 注入到初始化器中
 
 #### 配置
 
@@ -378,7 +380,7 @@
 
 ## 配置
 
-### 六、Adamw 优化器和 Warmup\-余弦衰减 调度器
+### 六、Adamw 优化器和 <br/>Warmup\-余弦衰减 调度器
 
 #### 当不使用 Zero offload\_optimizer 时，
 
@@ -428,7 +430,7 @@
 
 #### 6\.2 调度器
 
-##### • DeepSpeed 支持 LRRangeTest、OneCycle、WarmupLR 和 WarmupDecayLR 学习率调度器。
+##### • DeepSpeed 支持 LRRangeTest、OneCycle、<br/>WarmupLR 和 WarmupDecayLR 学习率调度器。
 
 ##### • Transformers和DeepSpeed中调度器的overlap
 
@@ -438,7 +440,7 @@
 
 ### 七、AMP混合训练精度
 
-#### fp16 混合精度大大减少了内存需求，并可以实现更快的速度，
+#### fp16 混合精度大大减少了内存需求，<br/>并可以实现更快的速度，
 
 ##### 只有在在此混合精度 训练模式下<br/>表现不佳时，才考虑不使用混合精度训练
 
@@ -546,7 +548,7 @@
 
 ########## 通常较大的 batch size 可以使训练过程更加稳定，  收敛速度可能更快
 
-########## 梯度累积可以将多个小 batch 的梯度累积起来，在达到一定数量（即累积步数）后进行一次更新，这样就相当于增大了 effective batch size
+########## 梯度累积可以将多个小 batch 的梯度累积起来，<br/>在达到一定数量（即累积步数）后进行一次更新，这样就相当于增大了 effective batch size
 
 ######### 梯度裁剪
 
