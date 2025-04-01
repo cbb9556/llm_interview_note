@@ -52,7 +52,7 @@
 
 ######## 层次分解的方式是将位置编码进行分层处理
 
-######### 比为将一个很长的数字（代表位置）按照数位（如个位、十位、百位等）进行分解。
+######### 比为将一个很长的数字（代表位置）按照数位<br/>（如个位、十位、百位等）进行分解。
 
 ######### 树的根节点代表整个序列的大致范围，随着层次的下降，节点所代表的范围逐渐缩小
 
@@ -61,6 +61,10 @@
 ######### 模型可以利用层次分解后的位置编码规律来处理长序列。
 
 ######### 在遇到更长的序列时，能够基于已有的层次关系规律，进行推理和外推
+
+######## 举例：
+
+######### 位置512的位置编码为 p 已经通过
 
 ####### 外推理解，关键在于重叠输入时<br/>仍然保持相对位置信息
 > fillColor=`#FF0E00`
@@ -73,6 +77,10 @@
 ######### 否则 513 将输入到 位置1
 
 ######### 模型无法理解， 513 其实是512的后面
+
+######### 这需要一个计算公式：
+
+########## 比如 通过可学习的位置编码 512有了一个位置编码，需要得知513的位置编码<br/>就通过层次计算公式，推导出513的位置编码
 
 ######## 外推就是，进行切分后，重叠放入原模型， 依然要保持原有的相对位置信息
 
@@ -101,6 +109,14 @@
 
 
 ######### 也是相加式的位置编码
+
+######### 位置1： i = 1； d = 768
+
+########## 位置1的768dim的位置向量 p的第2t分量为：sin\(1/10000^2t/768\)）
+
+########## 位置1的 768dim的第2t\+1维分量为：cos\(1/10000^2t/768\)
+
+######### 那么第 513位置的 p为 sin\(513/10000^2t/768\) 和 cos（513/10000^2t/768）
 
 ####### 三角函数式位置编码的特点是有显式的生成规律，<br/>因此可以期望于它有一定的外推性
 
@@ -205,6 +221,8 @@
 ########  
 > mmd.image=`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`
 
+
+######### 就是， 在位置 i = 512 和 位置j=515 ，本身有了绝对位置编码<br/>现在，还要变化下，
 
 ######## 这样一来，只需要有限个位置编码，就可以表达出任意长度的相对位置（因为进行了截断）
 
@@ -324,6 +342,14 @@
 
 #######  
 > mmd.image=`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`
+
+
+####### 就是 q\-linear 和 k\-linear 增加可训练的偏执，就可以实现 相对位置编码
+> fillColor=`#FF0E00`
+
+
+####### alibi 外推，直接用固定的 偏执矩阵，实现外推
+> fillColor=`#FF0E00`
 
 
 ######  
@@ -534,7 +560,7 @@
 
 ####### 就是在 q\-k的k\_linear、q\_linear、split\_head之后的 token向量上<br/>加入 一个位置为m和n角度为θ的旋转位置，后面qm \* kn就能构造出相对位置 m\-n
 
-####### 为了使得在相对位置较远时，即：m\-n较大时，q\*k的 atten\_score有衰减变化， θ的值需要使用 三角绝对位置编码的 10000\*\* 2i/d
+####### 为了使得在相对位置较远时，即：m\-n较大时，q\*k的 atten\_score有衰减变化，<br/> θ的值需要使用 三角绝对位置编码的 10000\*\* 2i/d
 
 ####### cos和 sin对token向量q构造的 旋转角度，需要两两成对， 分别旋转
 
@@ -576,6 +602,26 @@
 
 ########## https://zhuanlan\.zhihu\.com/p/667864459
 
+######## 举例
+
+######### 正余弦绝对位置编码
+
+########## 假设q = \[0,1,2,3\]
+
+########## q的绝对位置编码为 \[sin\(0/10000^2\*0/4\),cos\(1/10000^2\*1/4\),sin\(2/10000^2\*2/4\), cos\(3/10000^2\*3/4\)\]
+
+########## 上面两个相加，就能得到绝对位置编码
+
+########## 能够实现外推，因为 515 这个位置 可以计算出来
+
+######### rope相对位置编码
+
+########## 假设q = \[0,1,2,3\]
+
+########## q前面需要乘以 \[\[cosm,\-sinm\]\]
+
+########### 能够得到 qm
+
 ### 3\.ALiBi \(Attention with Linear Biases\) <br/>相对位置编码篇
 
 #### 用处：
@@ -605,6 +651,10 @@
 
 
 #### 相当于 q 和 k 相对位置差 1 就加上一个 \-1 的偏置。<br/>其实相当于假设两个 token 距离越远那么相互贡献也就越低。
+
+##### 512 \* 512 的 偏置 矩阵， 穷举任意位置之间的 偏置
+
+##### 占显存
 
 #### 其中Alibi 位置编码是不需要通过训练的，给定的预设矩阵中还会乘上m的调节因子
 
@@ -674,9 +724,21 @@
 > fillColor=`#FF0E00`
 
 
+##### 就是对于一个位置i 或者 位置m， 我需要将i或者m 变形， <br/>要么变成 sin\(i/10000^2t/d\)加到qkv上 <br/>要么变成 cos（m\* 1/10000^2t/d\) ）乘到q\-k上
+
+##### 回到这里， 
+
+###### 层级分解
+
+####### 就是把位置i，变成 个十百千万， 加到 q上
+
+######## 比如 512 表示为\[5,1,2\]<br/>515 表示为 \[5,1,5\]
+
+####### 或者，不用10进制，用16进制， 表示位置i，加到q上
+
 ##### （1）进制表示（层次分解）
 
-###### 将整数n以一个三维向量\[a,b,c\]来输入，a,b,c分别是n的百位、十位、个位。这样，我们既缩小了数字的跨度，<br/>又没有缩小相邻数字的差距，代价了增加了输入的维度——刚好，神经网络擅长处理高维数据。
+###### 将整数n以一个三维向量\[a,b,c\]来输入，a,b,c分别是n的百位、十位、个位。<br/>这样，我们既缩小了数字的跨度，<br/>又没有缩小相邻数字的差距，代价了增加了输入的维度——刚好，神经网络擅长处理高维数据。
 
 ###### 如果想要进一步缩小数字的跨度，我们还可以进一步缩小进制的基数，<br/>如使用8进制、6进制甚至2进制，代价是进一步增加输入的维度。
 
