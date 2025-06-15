@@ -1,0 +1,33 @@
+[Scia Reto](https://sciareto.org) mind map   
+> __version__=`1.1`,showJumps=`true`
+---
+
+# MHA
+> mmd.emoticon=`tree`
+
+
+## MLA
+
+### qkv 都低秩分解， 然后 进行矩阵合并
+
+### 矩阵的合并吸收， 能够 将 kv 仅通过 一个 Wkv矩阵 将x映射之后得到的  Ckv 变换而来
+
+### 位置编码只需要 concat到 k的 单个头上就行
+
+### q 通过线性映射 到qx，其维度为 128多头的维度  和 64dim的 位置编码维度
+
+## MQA
+
+### 对于一个输入x1， x2,x3 。。。； MHA需要将 每个x1 经过q\-linear、k\-linear、v\-linear线性映射变为<br/>qkv每个qkv的维度都为 d，而MHA将d/h 分为h个头，每个对应多头之间matul；
+
+### MQA将，x1、x2、x3等 经过linear变为 k和v的维度，变为 d/h一个头， 而且一个头复制h份在内存共享， 与q的 h个头进行matul<br/>大大减少了 kv cache 和 参数的内存占用。 
+
+### 计算量并没有变少， 因为 每个q 都要和同一个k进行计算
+
+#### 因为 q的 h个头， 是不一样的， 虽然都与相同 k、v头计算注意力
+
+### 参数量大大减少，因为  k\-v 实际参数量 减少了 h倍
+
+### kv\-cache数量减少， 因为， 推理的时候， 文字接龙， 上一个token x1的得到 k1、v1、q1，以及最终的隐藏层输出h1，<br/> h1作为下一个token的输入得到k2、v2、q2， 而且 q2 需要与 k1、v1 进行 注意力计算。 所以k1、v1需要缓存
+
+### MQA 的h个q头 与 一个k、v头，进行注意力计算， 推理的时候也是， 能够将kv cache降低 h倍
